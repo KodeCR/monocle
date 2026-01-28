@@ -1,0 +1,13 @@
+load("//monocle/rules:monocle.bzl", "image", "container")
+package(default_visibility = ["//visibility:public"])
+
+image(
+	name = "monocle",
+	dockerfile = "Dockerfile",
+	srcs = glob(["certs/**"], allow_empty=True),
+)
+
+container(
+	name = "monocle_base",
+	image = ":monocle",
+)
