@@ -1,4 +1,4 @@
-load("//monocle/rules:monocle.bzl", "image", "container")
+load("//rules:monocle.bzl", "image", "container")
 package(default_visibility = ["//visibility:public"])
 
 image(
