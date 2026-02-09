@@ -14,14 +14,14 @@ RUN  useradd -ms /bin/bash monocle
 # certificates
 ENV  REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
 COPY certs*/* /usr/local/share/ca-certificates/monocle/
-RUN  apt-get update -qy \
-  && apt-get install -qy --no-install-recommends ca-certificates gpg wget lsb-release \
+RUN  apt update -qy \
+  && apt install -qy --no-install-recommends ca-certificates gpg wget lsb-release \
   && update-ca-certificates \
   && rm -rf /var/lib/apt/lists/*
 
 # git support
-RUN  apt-get update -qy \
-  && apt-get install -qy --no-install-recommends git git-lfs openssh-client \
+RUN  apt update -qy \
+  && apt install -qy --no-install-recommends git git-lfs openssh-client \
   && rm -rf /var/lib/apt/lists/*
 # RUN mkdir -p -m 0700 ~/.ssh && ssh-keyscan github.com >> ~/.ssh/known_hosts
 RUN  mkdir -p -m 0700 ~/.ssh && echo "github.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl" >> ~/.ssh/known_hosts
