@@ -9,22 +9,24 @@ ImageInfo = provider(
 )
 
 def _image_impl(ctx):
-    run = ctx.actions.declare_file(ctx.label.name)
+    runfile = ctx.actions.declare_file(ctx.label.name)
+    tools = depset([], transitive = [dep[DefaultInfo].default_runfiles.files for dep in ctx.attr.deps])
     ctx.actions.run_shell(
         mnemonic = "Monocle",
         use_default_shell_env = True,
-        inputs = [ctx.file.dockerfile],
+        tools = tools,
+        inputs = [ctx.file.dockerfile] + ctx.files.srcs,
         arguments = [
             ctx.label.name,
             ctx.attr.tool,
             ctx.file.dockerfile.path,
             ctx.file.dockerfile.dirname,
-            run.path,
+            runfile.path,
         ],
-        outputs = [run],
+        outputs = [runfile],
         command = "ID=$($2 build -q -t $1 -f $3 $4) && echo \"#!/bin/bash\n$2 create -v ./:/$1 \\$@ $ID /bin/bash -c 'sleep 60; while [ \\$(cat /proc/loadavg | cut -d \\\" \\\" -s -f1) != 0.00 ]; do sleep 60; done'\" > $5",
     )
-    return [DefaultInfo(executable = run), ImageInfo(name = ctx.label.name, tool = ctx.attr.tool)]
+    return [DefaultInfo(executable = runfile), ImageInfo(name = ctx.label.name, tool = ctx.attr.tool)]
 
 image = rule(
     implementation = _image_impl,
@@ -40,6 +42,8 @@ image = rule(
 def _container_impl(ctx):
     exec = ctx.actions.declare_file(ctx.label.name)
     ctx.actions.run_shell(
+        mnemonic = "Monocle",
+        use_default_shell_env = True,
         tools = [ctx.file.image],
         inputs = [],
         arguments = [
