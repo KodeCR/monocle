@@ -1,4 +1,5 @@
 """Monocle rules"""
+visibility("public")
 
 ImageInfo = provider(
     "Image info",
@@ -28,7 +29,7 @@ def _image_impl(ctx):
     )
     return [DefaultInfo(executable = runfile), ImageInfo(name = ctx.label.name, tool = ctx.attr.tool)]
 
-image = rule(
+_image = rule(
     implementation = _image_impl,
     executable = True,
     attrs = {
@@ -60,7 +61,7 @@ def _container_impl(ctx):
     )
     return [DefaultInfo(executable = exec)]
 
-container = rule(
+_container = rule(
     implementation = _container_impl,
     executable = True,
     attrs = {
@@ -71,16 +72,20 @@ container = rule(
 )
 
 def _tool_impl(name, visibility, **kwargs):
-    container(
+    _container(
         name = name,
         visibility = visibility,
         **kwargs,
     )
 
-tool = macro(
+_tool = macro(
     implementation = _tool_impl,
-    inherit_attrs = container,
+    inherit_attrs = _container,
     attrs = {
         "binary": attr.string(mandatory = True),
     },
 )
+
+image = _image
+container = _container
+tool = _tool
