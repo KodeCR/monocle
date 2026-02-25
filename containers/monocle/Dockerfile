@@ -1,9 +1,8 @@
-################################
+################################################################
 # Monocle - Base image
-################################
+################################################################
 # Runtime
 FROM ubuntu:24.04
-WORKDIR /monocle
 
 USER root
 ARG  TARGETARCH
@@ -28,6 +27,7 @@ RUN  mkdir -p -m 0700 ~/.ssh && echo "github.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE
 
 # user
 USER monocle
+WORKDIR /monocle
 ENV  MONOCLE=0.1.0
 ENV  TERM="xterm-256color"
 CMD  ["/bin/bash"]
