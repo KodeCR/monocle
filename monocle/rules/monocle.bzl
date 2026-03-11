@@ -25,7 +25,7 @@ def _image_impl(ctx):
             runfile.path,
         ],
         outputs = [runfile],
-        command = "ID=$($2 build -q -t $1 -f $3 $4) && echo \"#!/bin/bash\n$2 create -v ./:/$1 \\$@ $ID /bin/bash -c 'sleep 60; while [ \\$(cat /proc/loadavg | cut -d \\\" \\\" -s -f1) != 0.00 ]; do sleep 60; done'\" > $5",
+        command = "ID=$($2 build -q -t $1 -f $3 $4) && echo \"#!/bin/bash\n$2 create \\$@ $ID /bin/bash -c 'sleep 60; while [ \\$(cat /proc/loadavg | cut -d \\\" \\\" -s -f1) != 0.00 ]; do sleep 60; done'\" > $5",
     )
     return [DefaultInfo(executable = runfile), ImageInfo(name = ctx.label.name, tool = ctx.attr.tool)]
 
@@ -41,6 +41,7 @@ _image = rule(
 )
 
 def _container_impl(ctx):
+    workdir = '/'+ctx.label.name if ctx.attr.workdir == '' else ctx.attr.workdir
     exec = ctx.actions.declare_file(ctx.label.name)
     ctx.actions.run_shell(
         mnemonic = "Monocle",
@@ -52,12 +53,13 @@ def _container_impl(ctx):
             ctx.file.image.path,
             ctx.attr.image[ImageInfo].name,
             ctx.attr.image[ImageInfo].tool,
+            workdir,
             ctx.attr.options,
             ctx.attr.binary,
             exec.path,
         ],
         outputs = [exec],
-        command = "ID=$($2 $5) && echo \"#!/bin/bash\n$4 start $ID; $4 exec $ID $6 \\$@\" > $7",
+        command = "ROOT=$(realpath monocle/..) && ID=$($2 -v $ROOT:$ROOT -v ./:$5 $6) && echo \"#!/bin/bash\n$4 start $ID; $4 exec $ID $7 \\$@\" > $8",
     )
     return [DefaultInfo(executable = exec)]
 
@@ -66,6 +68,7 @@ _container = rule(
     executable = True,
     attrs = {
         "image": attr.label(allow_single_file = True, mandatory = True, providers = [DefaultInfo, ImageInfo]),
+        "workdir": attr.string(default = '', mandatory = False),
         "options": attr.string(default = '', mandatory = False),
         "binary": attr.string(default = '', mandatory = False),
     },
