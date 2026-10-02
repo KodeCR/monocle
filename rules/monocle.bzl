@@ -59,7 +59,7 @@ def _container_impl(ctx):
             exec.path,
         ],
         outputs = [exec],
-        command = "ROOT=$(realpath monocle/..) && ID=$($2 -v $ROOT:$ROOT -v ./:$5 $6) && echo \"#!/bin/bash\n$4 start $ID; $4 exec $ID $7 \\$@\" > $8",
+        command = "ROOT=$(dirname $(realpath MODULE.bazel)) && ID=$($2 -v $ROOT:$ROOT -v ./:$5 $6) && echo \"#!/bin/bash\n$4 start $ID; $4 exec $ID $7 \\$@\" > $8",
     )
     return [DefaultInfo(executable = exec)]
 
